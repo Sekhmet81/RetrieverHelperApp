@@ -66,8 +66,15 @@ namespace RetrieverHelperApp
 					MessageBox.Show("You can just delete that machine in Process, silly!\nTry again with a machine #\nthat you can't delete in Process.");
 					return;
 				}
-				//
-
+				
+				//Check that we truely want to delete
+				
+				MessageBoxButtons buttons = MessageBoxButtons.YesNo;
+                DialogResult result = MessageBox.Show("Are you sure you want to delete this Machine number?", "Are you sure?", buttons, MessageBoxIcon.Question);
+				if (result==DialogResult.No)
+                {
+					return;
+                }
 
 				//Delete machine number and move all below it up
 

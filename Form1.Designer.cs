@@ -44,6 +44,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.tabPage1 = new System.Windows.Forms.TabPage();
@@ -123,7 +124,8 @@
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(742, 24);
             this.label6.TabIndex = 10;
-            this.label6.Text = "You will need the VPN IP address, database name, and machine number to be deleted.";
+            this.label6.Text = "You will need the VPN IP address, database name, and machine number to be deleted" +
+    ".";
             this.label6.UseMnemonic = false;
             // 
             // label5
@@ -134,7 +136,8 @@
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(604, 57);
             this.label5.TabIndex = 9;
-            this.label5.Text = "*Please do a back up of this location\'s database. This is a very powerful tool. Once you click submit it can\'t be undone!*";
+            this.label5.Text = "*Please do a back up of this location\'s database. This is a very powerful tool. O" +
+    "nce you click submit it can\'t be undone!*";
             this.label5.UseMnemonic = false;
             // 
             // label4
@@ -231,6 +234,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(756, 523);
             this.Controls.Add(this.tabControl1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Retriever Helper";
