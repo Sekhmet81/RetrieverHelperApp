@@ -1,5 +1,7 @@
 ﻿using Npgsql;
+using Npgsql.PostgresTypes;
 using System;
+using System.Data.SqlClient;
 using System.Windows.Forms;
 
 namespace RetrieverHelperApp
@@ -15,8 +17,8 @@ namespace RetrieverHelperApp
         {
 			// assign vars with input from textboxes
 			label7.Text = "";
-            string ipAddress = txtIP.Text;
-			string databaseName = txtDbName.Text;
+            string ipAddress = txtIPrd.Text;
+			string databaseName = txtDbNamerd.Text;
 
 			
 			if (databaseName == "")
@@ -90,7 +92,80 @@ namespace RetrieverHelperApp
                 label7.Text = "Machine # " + machineNumber + " removed!  Please restart Process to see the changes.";
             }
 		}
-	}
+
+		private void button2_Click(object sender, EventArgs e)
+		{
+			label14.Text = "";
+			string ipAddress = txtIPrs.Text;
+			string databaseName = txtDbNamers.Text;
+
+			if (databaseName == "")
+			{
+				label14.Text = "Database field is empty. Please add a database name." + ipAddress;
+				return;
+			}
+			if (!int.TryParse(txtFeatureId.Text, out int featureId))
+			{
+				label14.Text = "Feature ID is invalid. Please use a valid Feature ID.";
+				return;
+			}
+
+			//open connection
+
+			using (NpgsqlConnection conn = new NpgsqlConnection("Host=" + ipAddress + "; User Id=postgres; Password=Harvard%2525; Database=" + databaseName))
+			{
+				try
+				{
+					conn.Open();
+				}
+				catch (NpgsqlException ex2)
+				{
+					MessageBox.Show($"SqlException: {ex2.Message}");
+					return;
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show($"Exception: {ex.Message}");
+					return;
+				}
+				string sql = "SELECT movieid, systemdate, starttime, roomid FROM schedule WHERE featureid=" + featureId + ";";
+
+				NpgsqlCommand npgsqlCommand = new NpgsqlCommand(sql, conn);
+				
+				NpgsqlDataReader reader = npgsqlCommand.ExecuteReader();
+
+				(int movieId, int systemDate, int startTime, int roomId) = (0, 0, 0, 0);
+
+				while (reader.Read())
+				{
+					movieId = Convert.ToInt32(reader[0]);
+					systemDate = Convert.ToInt32(reader[1]);
+					startTime = Convert.ToInt32(reader[2]);
+					roomId = Convert.ToInt32(reader[3]);
+				}
+				reader.Close();
+
+				sql = "SELECT abbrevtext FROM movie WHERE movieid=" + movieId;
+
+				NpgsqlCommand cmd = new NpgsqlCommand(sql, conn);
+
+				string abbrevText = Convert.ToString(cmd.ExecuteScalar());
+
+				MessageBoxButtons buttons = MessageBoxButtons.YesNo;
+				DialogResult result = MessageBox.Show("This will delete the Movie '" + abbrevText + "' in Auditorium " + roomId + " starting at the 24hr time of " + startTime + " on this YYYYMMDD of " + systemDate + ". Are you certain?", "Are you sure?", buttons, MessageBoxIcon.Question);
+				if (result == DialogResult.No)
+				{
+					return;
+				}
+				sql = "DELETE FROM featureschedule WHERE featureid=" + featureId + ";" + "DELETE FROM schedule WHERE featureid=" + featureId + ";";
+				NpgsqlCommand cmd2 = new NpgsqlCommand(sql, conn);
+				cmd2.ExecuteNonQuery();
+
+				label14.Text = "The showing with feature ID (" + featureId + ") is removed!\nPlease move out and back into the 'Show Times' modual in Process to see the change.";
+
+			}
+		}
+    }
  }  
 
 
