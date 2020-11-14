@@ -1,8 +1,10 @@
 ﻿using Npgsql;
 using Npgsql.PostgresTypes;
 using System;
+using System.Data;
 using System.Data.SqlClient;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
 
 namespace RetrieverHelperApp
 {
@@ -11,6 +13,22 @@ namespace RetrieverHelperApp
         public Form1()
         {
             InitializeComponent();
+			tabControl1.SelectedIndexChanged += new EventHandler(TabControl1_SelectedIndexChanged);
+		}
+
+        private void TabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+			txtDbNameOids.Text = "";
+			txtDbNamerd.Text = "";
+			txtDbNamers.Text = "";
+			txtFeatureId.Text = "";
+			txtHostOids.Text = "";
+			txtIPrd.Text = "";
+            txtIPrs.Text = "";
+            txtMachine.Text = "";
+			txtOutput.Text = "";
+			label7.Text = "";
+			label14.Text = "";
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -162,6 +180,63 @@ namespace RetrieverHelperApp
 				cmd2.ExecuteNonQuery();
 
 				label14.Text = "The showing with feature ID (" + featureId + ") is removed!\nPlease move out and back into the 'Show Times' modual in Process to see the change.";
+
+			}
+		}
+
+		private void button3_Click(object sender, EventArgs e)
+		{
+			txtOutput.Text = "";
+			string ipAddress = txtHostOids.Text;
+			string databaseName = txtDbNameOids.Text;
+
+			if (databaseName == "")
+			{
+				txtOutput.Text = "Database field is empty. Please add a database name." + ipAddress;
+				return;
+			}
+
+			//open connection
+
+			using (NpgsqlConnection conn = new NpgsqlConnection("Host=" + ipAddress + "; User Id=postgres; Password=Harvard%2525; Database=" + databaseName))
+			{
+				try
+				{
+					conn.Open();
+				}
+				catch (NpgsqlException ex2)
+				{
+					MessageBox.Show($"SqlException: {ex2.Message}");
+					return;
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show($"Exception: {ex.Message}");
+					return;
+				}
+
+                //Pull the names of all the tables in the database and fill a datatable with the query result
+
+                string sql = "SELECT * FROM pg_catalog.pg_tables WHERE schemaname = 'public'; ";
+				NpgsqlDataAdapter adapter = new NpgsqlDataAdapter(sql, conn);
+				DataSet ds = new DataSet();
+				adapter.Fill(ds);
+				sql = "";
+
+                //Build ALTER TABLE query
+
+                for (int i = 0; i <= ds.Tables[0].Rows.Count - 1 ;i++)
+				{
+					sql += "ALTER TABLE " + Convert.ToString(ds.Tables[0].Rows[i].ItemArray[1]) + " SET WITH OIDS;";
+
+				}
+				txtOutput.Text = "Processing.....";
+				NpgsqlCommand cmd = new NpgsqlCommand(sql, conn);
+				cmd.ExecuteNonQuery();
+
+				txtOutput.Text = sql;
+
+				MessageBox.Show("The SQL query that printed in the textbox has been executed. \n All tables that are named will now have OIDs!");
 
 			}
 		}
